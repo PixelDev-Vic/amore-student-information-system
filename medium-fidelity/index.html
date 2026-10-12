@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amore CWSIS — Medium-Fidelity Prototype</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      color: #222;
+      background: #fff;
+      line-height: 1.5;
+    }
+
+    /* ─── Tokens (grayscale palette) ──────────────────────────── */
+    :root {
+      --black:   #111;
+      --dark:    #333;
+      --mid:     #555;
+      --muted:   #777;
+      --light:   #aaa;
+      --border:  #ccc;
+      --bg-alt:  #f4f4f4;
+      --bg-page: #fff;
+      --accent:  #444;   /* single muted accent — no color */
+    }
+
+    /* ─── Typography ───────────────────────────────────────────── */
+    h1 { font-size: 22px; font-weight: 700; color: var(--black); margin-bottom: 4px; }
+    h2 { font-size: 17px; font-weight: 700; color: var(--black); margin-bottom: 12px; }
+    h3 { font-size: 13px; font-weight: 600; color: var(--dark); }
+    p  { color: var(--mid); font-size: 12px; }
+
+    /* ─── Utility ──────────────────────────────────────────────── */
+    .mono { font-family: "Courier New", monospace; }
+    .label {
+      font-family: "Courier New", monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .tag {
+      display: inline-block;
+      font-family: "Courier New", monospace;
+      font-size: 10px;
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: var(--mid);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 10px;
+      color: var(--mid);
+    }
+    .btn {
+      display: inline-block;
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--dark);
+      border-radius: 2px;
+      background: none;
+    }
+    .btn-primary {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+    .placeholder-img {
+      background: var(--bg-alt);
+      border: 1px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--light);
+      font-family: "Courier New", monospace;
+      text-align: center;
+    }
+
+    /* ─── Layout primitives ────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    .grid-3-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    /* ─── Shared structural pieces ─────────────────────────────── */
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: #fff;
+    }
+    .card-header {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-body { padding: 14px; }
+
+    .stat-card {
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 2px;
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .stat-card .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-family: "Courier New", monospace; }
+    .stat-card .stat-value { font-size: 26px; font-weight: 700; color: var(--black); margin: 2px 0; }
+    .stat-card .stat-delta { font-size: 11px; color: var(--muted); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th {
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      font-family: "Courier New", monospace;
+      font-weight: 600;
+      padding: 8px 12px;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid #eee; color: var(--dark); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+
+    .sidebar-nav li {
+      list-style: none;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: var(--mid);
+      border-left: 3px solid transparent;
+    }
+    .sidebar-nav li.active {
+      background: var(--bg-alt);
+      border-left-color: var(--accent);
+      color: var(--black);
+      font-weight: 600;
+    }
+
+    .bar-track {
+      height: 6px;
+      background: #e8e8e8;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+    .bar-fill {
+      height: 6px;
+      background: var(--accent);
+      border-radius: 3px;
+    }
+
+    .form-field { margin-bottom: 12px; }
+    .form-field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-family: "Courier New", monospace; margin-bottom: 4px; }
+    .form-field input,
+    .form-field select {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 2px;
+      color: var(--dark);
+      background: #fff;
+    }
+
+    .schedule-cell {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 4px 8px;
+      font-size: 10px;
+      color: var(--dark);
+      white-space: pre-line;
+      line-height: 1.4;
+      display: inline-block;
+      min-width: 80px;
+      text-align: left;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #eee;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .check-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .check-circle.done { background: var(--bg-alt); }
+
+    /* ─── Page-break sections ──────────────────────────────────── */
+
+    /* Each "page" = one printed screen  */
+    .page-section {
+      page-break-before: always;
+      padding-top: 20px;
+    }
+    .page-section:first-child { page-break-before: avoid; }
+
+    /* Section label banner */
+    .section-banner {
+      background: var(--dark);
+      color: #fff;
+      font-size: 10px;
+      font-family: "Courier New", monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      margin-bottom: 16px;
+    }
+
+    /* global topbar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      height: 40px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      margin-bottom: 0;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--black);
+    }
+    .topbar-logo .logo-box {
+      width: 20px; height: 20px;
+      background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 700;
+      border-radius: 2px;
+    }
+    .topbar-logo .sep { color: var(--border); margin: 0 4px; }
+    .topbar-logo .sub { font-size: 10px; font-family: "Courier New", monospace; color: var(--muted); }
+    .topbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+    /* sidebar + content layout */
+    .panel-layout { display: grid; grid-template-columns: 160px 1fr; gap: 0; min-height: 600px; }
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 12px 0;
+      background: #fafafa;
+    }
+    .sidebar-label { font-size: 10px; font-family: "Courier New", monospace; text-transform: uppercase; letter-spacing: 0.08em; color: var(--light); padding: 0 14px 8px; }
+    .panel-content { padding: 20px; }
+
+    /* page wrapper (no-print label at top) */
+    .no-print-label {
+      background: #efefef;
+      border-bottom: 1px solid #ccc;
+      font-size: 11px;
+      font-family: "Courier New", monospace;
+      color: #666;
+      padding: 5px 14px;
+      text-align: center;
+    }
+
+    /* ─── Print rules ──────────────────────────────────────────── */
+    @media print {
+      @page { size: A4; margin: 15mm 14mm; }
+
+      body { font-size: 11px; }
+      .no-print-label { display: none; }
+
+      /* Force white backgrounds, remove color fills */
+      .section-banner { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .stat-card, .card, th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* No sticky/fixed elements */
+      .topbar { position: static; }
+
+      /* Break avoidance */
+      .card, .stat-card, .checklist-item, tr, .card-header { break-inside: avoid; }
+      h1, h2, h3 { break-after: avoid; }
+      table { break-inside: auto; }
+      .page-section { page-break-before: always; }
+      .page-section:first-child { page-break-before: avoid; }
+      .panel-layout { grid-template-columns: 130px 1fr; }
+
+      /* No overflow clipping on print */
+      .sidebar { overflow: visible; }
+
+      /* Bar fills need forced color */
+      .bar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PRINT GUIDE (hidden on print)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="no-print-label">
+  AMORE CWSIS — Medium-Fidelity Print Prototype &nbsp;|&nbsp;
+  Open browser Print dialog → Save as PDF &nbsp;|&nbsp;
+  Paper: A4, Margins: Default, Scale: 85–90% if content clips
+</div>
+
+<!-- Shared top bar (appears at top of each printed section via repeat topbar) -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-box">A</div>
+    <span>AMORE</span>
+    <span class="sep">|</span>
+    <span class="sub">CWSIS</span>
+  </div>
+  <div class="topbar-right">
+    <span class="btn btn-primary">Login</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 1 — LANDING PAGE
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 1 of 9 — Landing Page</div>
+
+  <!-- Hero -->
+  <div style="max-width:860px; margin:0 auto; padding:0 16px 24px;">
+    <div class="grid-2-1" style="align-items:start; gap:32px; margin-bottom:32px;">
+      <div>
+        <div class="tag" style="margin-bottom:10px;">AY 2024–2025 · 1st Semester</div>
+        <h1 style="font-size:26px; line-height:1.25; margin-bottom:10px;">
+          Amore Centralized Web Student Information System
+        </h1>
+        <p style="font-size:12px; color:#555; margin-bottom:16px; line-height:1.6;">
+          A unified digital platform for managing academic records, enrollment, grades, and schedules — accessible to students, faculty, and administrators.
+        </p>
+        <div style="display:flex; gap:8px;">
+          <span class="btn btn-primary">Student Portal →</span>
+          <span class="btn">Admin / Registrar</span>
+        </div>
+      </div>
+      <!-- Wireframe placeholder -->
+      <div class="placeholder-img" style="height:180px; border-radius:2px;">
+        [WIREFRAME: App Preview Screenshot]
+      </div>
+    </div>
+    <hr class="divider" style="margin-bottom:28px;">
+
+    <!-- Features -->
+    <h2>Everything in one place</h2>
+    <p style="margin-bottom:16px; color:#777;">Designed for students, faculty, and administrators.</p>
+    <div class="grid-3" style="margin-bottom:28px;">
+      <div class="card" style="padding:14px;">
+        <div class="label" style="margin-bottom:6px;">[ICON]  Student Records</div>
+        <p>Complete academic history, personal information, and enrollment status in one profile.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div class="label" style="margin-bottom:6px;">[ICON]  Online Enrollment</div>
+        <p>Enroll in courses, view available sections, and manage your academic load each semester.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div class="label" style="margin-bottom:6px;">[ICON]  Grade Viewing</div>
+        <p>Check grades per subject, view GWA, and monitor academic standing in real time.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div class="label" style="margin-bottom:6px;">[ICON]  Class Schedule</div>
+        <p>View your weekly class schedule and room assignments for every enrolled course.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div class="label" style="margin-bottom:6px;">[ICON]  Document Requests</div>
+        <p>Request transcripts, certificates of enrollment, and other official documents online.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <div class="label" style="margin-bottom:6px;">[ICON]  Clearance System</div>
+        <p>Track and complete department and office clearances before graduation or leave of absence.</p>
+      </div>
+    </div>
+    <hr class="divider" style="margin-bottom:24px;">
+
+    <!-- Announcements + Calendar -->
+    <div class="grid-2-1" style="gap:32px;">
+      <div>
+        <h2>Announcements</h2>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="card" style="padding:12px; display:flex; gap:12px;">
+            <div style="min-width:36px; text-align:center;">
+              <div style="font-size:16px; font-weight:700; color:#333;">16</div>
+              <div class="label">Aug</div>
+            </div>
+            <div>
+              <div style="font-weight:600; font-size:12px;">Late Enrollment Period Now Open <span class="tag">Enrollment</span></div>
+              <p>Students who missed the regular enrollment window may enroll until August 20, 2024. A late enrollment fee applies.</p>
+            </div>
+          </div>
+          <div class="card" style="padding:12px; display:flex; gap:12px;">
+            <div style="min-width:36px; text-align:center;">
+              <div style="font-size:16px; font-weight:700; color:#333;">10</div>
+              <div class="label">Aug</div>
+            </div>
+            <div>
+              <div style="font-weight:600; font-size:12px;">COR Distribution Schedule Released <span class="tag">Registrar</span></div>
+              <p>Certificate of Registration will be available for pickup at the Registrar's Office starting August 12.</p>
+            </div>
+          </div>
+          <div class="card" style="padding:12px; display:flex; gap:12px;">
+            <div style="min-width:36px; text-align:center;">
+              <div style="font-size:16px; font-weight:700; color:#333;">5</div>
+              <div class="label">Aug</div>
+            </div>
+            <div>
+              <div style="font-weight:600; font-size:12px;">Scholarship Applications Open <span class="tag">Finance</span></div>
+              <p>Students who qualify for institutional scholarships may submit applications to the Finance Office until August 30.</p>
+            </div>
+          </div>
+          <div class="card" style="padding:12px; display:flex; gap:12px;">
+            <div style="min-width:36px; text-align:center;">
+              <div style="font-size:16px; font-weight:700; color:#333;">28</div>
+              <div class="label">Jul</div>
+            </div>
+            <div>
+              <div style="font-weight:600; font-size:12px;">New Online Grade Encoding System <span class="tag">System</span></div>
+              <p>Faculty members can now encode grades directly through CWSIS. Training sessions are available upon request.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2>Academic Calendar</h2>
+        <div style="border:1px solid var(--border); border-radius:2px; overflow:hidden; margin-bottom:14px;">
+          <table>
+            <tbody>
+              <tr><td>Start of Classes</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Aug 19, 2024</td></tr>
+              <tr><td>Prelim Exams</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Sep 16–20, 2024</td></tr>
+              <tr><td>Midterm Exams</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Oct 14–18, 2024</td></tr>
+              <tr><td>Semi-Final Exams</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Nov 11–15, 2024</td></tr>
+              <tr><td>Final Exams</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Dec 9–13, 2024</td></tr>
+              <tr><td>End of Semester</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Dec 20, 2024</td></tr>
+              <tr><td>Christmas Break</td><td class="mono" style="text-align:right; color:var(--muted); font-size:11px;">Dec 21 – Jan 3</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="padding:12px;">
+          <div class="label" style="margin-bottom:4px;">Support</div>
+          <h3 style="margin-bottom:6px;">Need help?</h3>
+          <p style="margin-bottom:6px;">Contact the Registrar's Office or IT Helpdesk for system access issues.</p>
+          <div style="font-size:11px; color:var(--mid);">registrar@amore.edu.ph</div>
+          <div style="font-size:11px; color:var(--mid);">ithelpdesk@amore.edu.ph</div>
+          <div class="mono" style="font-size:11px; color:var(--mid);">(02) 8123-4567</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 2 — ADMIN: DASHBOARD
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 2 of 9 — Admin Panel: Dashboard</div>
+  <div class="topbar" style="margin-bottom:0;">
+    <div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div>
+    <div class="topbar-right"><span class="tag">ADMIN</span><span style="font-size:11px; color:var(--muted);">Admin Reyes · Registrar</span></div>
+  </div>
+  <div class="panel-layout">
+    <div class="sidebar">
+      <div class="sidebar-label">Admin</div>
+      <ul class="sidebar-nav">
+        <li class="active">⊞ Dashboard</li>
+        <li>◈ Students</li>
+        <li>⊕ Enrollment</li>
+        <li>≡ Grades</li>
+        <li>⊟ Schedule</li>
+        <li>◉ Faculty</li>
+        <li>⊡ Reports</li>
+        <li>⚙ Settings</li>
+      </ul>
+    </div>
+    <div class="panel-content">
+      <h1>Dashboard</h1>
+      <p style="margin-bottom:16px;">AY 2024–2025 — 1st Semester Overview</p>
+
+      <div class="grid-4" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Students</div>
+          <div class="stat-value">4,821</div>
+          <div class="stat-delta">+134 this sem</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Enrolled</div>
+          <div class="stat-value">4,203</div>
+          <div class="stat-delta">87.2% rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Departments</div>
+          <div class="stat-value">12</div>
+          <div class="stat-delta">6 colleges</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Requests</div>
+          <div class="stat-value">38</div>
+          <div class="stat-delta">↑ 12 new</div>
+        </div>
+      </div>
+
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-header">
+            <h3>Recent Transactions</h3>
+            <span style="font-size:11px; color:var(--muted);">View all</span>
+          </div>
+          <table>
+            <tbody>
+              <tr><td class="mono" style="width:24px; color:var(--light);">1</td><td><div style="font-weight:600;">Enrollment confirmed</div><div style="color:var(--muted); font-size:11px;">Reyes, Maria Lucia C.</div></td><td class="mono" style="text-align:right; font-size:11px; color:var(--muted);">Enrolled<br>09:42 AM</td></tr>
+              <tr><td class="mono" style="color:var(--light);">2</td><td><div style="font-weight:600;">Grade entry submitted</div><div style="color:var(--muted); font-size:11px;">Santos, Juan Pablo M.</div></td><td class="mono" style="text-align:right; font-size:11px; color:var(--muted);">Grades<br>09:15 AM</td></tr>
+              <tr><td class="mono" style="color:var(--light);">3</td><td><div style="font-weight:600;">Leave of absence filed</div><div style="color:var(--muted); font-size:11px;">Mendoza, Sofia T.</div></td><td class="mono" style="text-align:right; font-size:11px; color:var(--muted);">LOA<br>08:50 AM</td></tr>
+              <tr><td class="mono" style="color:var(--light);">4</td><td><div style="font-weight:600;">New student registered</div><div style="color:var(--muted); font-size:11px;">Villanueva, Carlos E.</div></td><td class="mono" style="text-align:right; font-size:11px; color:var(--muted);">New<br>08:30 AM</td></tr>
+              <tr><td class="mono" style="color:var(--light);">5</td><td><div style="font-weight:600;">Course section added</div><div style="color:var(--muted); font-size:11px;">BSIT 202 — Web Dev</div></td><td class="mono" style="text-align:right; font-size:11px; color:var(--muted);">Schedule<br>08:10 AM</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="card card-body">
+            <h3 style="margin-bottom:10px;">Quick Actions</h3>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span class="btn">Add New Student</span>
+              <span class="btn">Open Enrollment</span>
+              <span class="btn">Generate Report</span>
+              <span class="btn">Print COR</span>
+            </div>
+          </div>
+          <div class="card card-body">
+            <h3 style="margin-bottom:10px;">Enrollment by College</h3>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);"><span>Engineering</span><span class="mono">88%</span></div><div class="bar-track"><div class="bar-fill" style="width:88%;"></div></div></div>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);"><span>Business</span><span class="mono">74%</span></div><div class="bar-track"><div class="bar-fill" style="width:74%;"></div></div></div>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);"><span>Nursing</span><span class="mono">95%</span></div><div class="bar-track"><div class="bar-fill" style="width:95%;"></div></div></div>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);"><span>IT</span><span class="mono">82%</span></div><div class="bar-track"><div class="bar-fill" style="width:82%;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);"><span>Education</span><span class="mono">61%</span></div><div class="bar-track"><div class="bar-fill" style="width:61%;"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 3 — ADMIN: STUDENT RECORDS
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 3 of 9 — Admin Panel: Student Records</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">ADMIN</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Admin</div><ul class="sidebar-nav"><li>⊞ Dashboard</li><li class="active">◈ Students</li><li>⊕ Enrollment</li><li>≡ Grades</li><li>⊟ Schedule</li><li>◉ Faculty</li><li>⊡ Reports</li><li>⚙ Settings</li></ul></div>
+    <div class="panel-content">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+        <div><h1>Student Records</h1><p>8 students found</p></div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div style="border:1px solid var(--border); padding:5px 10px; font-size:12px; color:var(--muted); border-radius:2px; width:200px;">[Search name, ID, department...]</div>
+          <span class="btn btn-primary">+ Add Student</span>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Student ID</th><th>Name</th><th>Department</th><th>Year Level</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td class="mono" style="color:var(--muted);">2024-001</td><td style="font-weight:600;">Reyes, Maria Lucia C.</td><td>College of Engineering</td><td>3rd Year</td><td><span class="badge">Regular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-002</td><td style="font-weight:600;">Santos, Juan Pablo M.</td><td>College of Business</td><td>2nd Year</td><td><span class="badge">Irregular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-003</td><td style="font-weight:600;">Dela Cruz, Angela R.</td><td>College of Nursing</td><td>4th Year</td><td><span class="badge">Regular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-004</td><td style="font-weight:600;">Villanueva, Carlos E.</td><td>College of Arts &amp; Sciences</td><td>1st Year</td><td><span class="badge">Regular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-005</td><td style="font-weight:600;">Mendoza, Sofia T.</td><td>College of Education</td><td>3rd Year</td><td><span class="badge">LOA</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-006</td><td style="font-weight:600;">Bautista, Miguel A.</td><td>College of Engineering</td><td>4th Year</td><td><span class="badge">Regular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-007</td><td style="font-weight:600;">Garcia, Kristine Joy L.</td><td>College of IT</td><td>2nd Year</td><td><span class="badge">Regular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-008</td><td style="font-weight:600;">Torres, Andrei P.</td><td>College of Business</td><td>1st Year</td><td><span class="badge">Irregular</span></td><td><span style="font-size:11px; color:var(--mid);">View · Edit</span></td></tr>
+          </tbody>
+        </table>
+        <div style="padding:8px 12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:11px; color:var(--muted); font-family:'Courier New',monospace;">
+          <span>Showing 8 of 8</span>
+          <span>← Prev &nbsp; [1] &nbsp; 2 &nbsp; Next →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 4 — ADMIN: ENROLLMENT MANAGEMENT
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 4 of 9 — Admin Panel: Enrollment Management</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">ADMIN</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Admin</div><ul class="sidebar-nav"><li>⊞ Dashboard</li><li>◈ Students</li><li class="active">⊕ Enrollment</li><li>≡ Grades</li><li>⊟ Schedule</li><li>◉ Faculty</li><li>⊡ Reports</li><li>⚙ Settings</li></ul></div>
+    <div class="panel-content">
+      <h1>Enrollment Management</h1>
+      <p style="margin-bottom:14px;">AY 2024–2025 — 1st Semester</p>
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="card card-body"><div class="label">Enrollment Period</div><div style="font-size:13px; font-weight:600; margin-top:4px;">Aug 1–15, 2024</div><div style="font-size:11px; color:var(--muted);">Closed</div></div>
+        <div class="card card-body"><div class="label">Late Enrollment</div><div style="font-size:13px; font-weight:600; margin-top:4px;">Aug 16–20, 2024</div><div style="font-size:11px; color:var(--muted);">Active</div></div>
+        <div class="card card-body"><div class="label">Total Sections</div><div style="font-size:13px; font-weight:600; margin-top:4px;">98</div><div style="font-size:11px; color:var(--muted);">across 12 colleges</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Course Sections</h3><span style="font-size:11px; color:var(--muted);">+ Add Section</span></div>
+        <table>
+          <thead><tr><th>Course</th><th>Section</th><th>Slots</th><th>Filled</th><th>Available</th><th>Faculty</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;">BSCS 301 — Data Structures</td><td class="mono">CS3A</td><td>40</td><td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track" style="width:60px;"><div class="bar-fill" style="width:93%;"></div></div><span class="mono">37</span></div></td><td class="mono">3</td><td>Prof. Bernardo</td></tr>
+            <tr><td style="font-weight:600;">BSIT 202 — Web Development</td><td class="mono">IT2B</td><td>35</td><td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track" style="width:60px;"><div class="bar-fill" style="width:100%;"></div></div><span class="mono">35</span></div></td><td class="mono" style="font-weight:700;">FULL</td><td>Prof. Lumabas</td></tr>
+            <tr><td style="font-weight:600;">BSN 401 — Community Health</td><td class="mono">N4C</td><td>30</td><td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track" style="width:60px;"><div class="bar-fill" style="width:73%;"></div></div><span class="mono">22</span></div></td><td class="mono">8</td><td>Prof. Sison</td></tr>
+            <tr><td style="font-weight:600;">BSBA 101 — Principles of Mgmt</td><td class="mono">BA1A</td><td>45</td><td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track" style="width:60px;"><div class="bar-fill" style="width:91%;"></div></div><span class="mono">41</span></div></td><td class="mono">4</td><td>Prof. Reyes</td></tr>
+            <tr><td style="font-weight:600;">BSED 302 — Curriculum Design</td><td class="mono">ED3B</td><td>28</td><td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track" style="width:60px;"><div class="bar-fill" style="width:68%;"></div></div><span class="mono">19</span></div></td><td class="mono">9</td><td>Prof. Camacho</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 5 — ADMIN: GRADE MANAGEMENT
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 5 of 9 — Admin Panel: Grade Management</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">ADMIN</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Admin</div><ul class="sidebar-nav"><li>⊞ Dashboard</li><li>◈ Students</li><li>⊕ Enrollment</li><li class="active">≡ Grades</li><li>⊟ Schedule</li><li>◉ Faculty</li><li>⊡ Reports</li><li>⚙ Settings</li></ul></div>
+    <div class="panel-content">
+      <h1>Grade Management</h1>
+      <p style="margin-bottom:14px;">Encode and manage student grades per course section</p>
+      <div class="card" style="padding:14px; margin-bottom:14px; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+        <div class="form-field" style="margin:0; min-width:130px;"><label>College</label><select><option>Select college...</option></select></div>
+        <div class="form-field" style="margin:0; min-width:130px;"><label>Course</label><select><option>Select course...</option></select></div>
+        <div class="form-field" style="margin:0; min-width:100px;"><label>Section</label><select><option>Select section...</option></select></div>
+        <span class="btn btn-primary">Load</span>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>BSCS 301 — Section CS3A · Grade Encoding</h3></div>
+        <table>
+          <thead><tr><th>Student ID</th><th>Name</th><th>Prelim</th><th>Midterm</th><th>Semi-Final</th><th>Final</th><th>Remarks</th></tr></thead>
+          <tbody>
+            <tr><td class="mono" style="color:var(--muted);">2024-001</td><td style="font-weight:600;">Reyes, Maria Lucia C.</td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.25</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.50</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.25</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.25</div></td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-006</td><td style="font-weight:600;">Bautista, Miguel A.</td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.75</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">2.00</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.75</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">2.00</div></td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-007</td><td style="font-weight:600;">Garcia, Kristine Joy L.</td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.00</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.25</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.00</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">1.00</div></td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">2024-003</td><td style="font-weight:600;">Dela Cruz, Angela R.</td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">3.00</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">2.75</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">3.00</div></td><td><div style="border:1px solid var(--border);padding:3px 6px;width:44px;text-align:center;font-size:11px;font-family:'Courier New',monospace;">5.00</div></td><td><span class="badge">Failed</span></td></tr>
+          </tbody>
+        </table>
+        <div style="padding:10px 14px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px;">
+          <span class="btn">Cancel</span>
+          <span class="btn btn-primary">Save Grades</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 6 — ADMIN: FACULTY + REPORTS
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 6 of 9 — Admin Panel: Faculty Management &amp; Reports</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">ADMIN</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Admin</div><ul class="sidebar-nav"><li>⊞ Dashboard</li><li>◈ Students</li><li>⊕ Enrollment</li><li>≡ Grades</li><li>⊟ Schedule</li><li class="active">◉ Faculty</li><li>⊡ Reports</li><li>⚙ Settings</li></ul></div>
+    <div class="panel-content">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+        <div><h1>Faculty Management</h1><p>Teaching assignments and faculty records</p></div>
+        <span class="btn btn-primary">+ Add Faculty</span>
+      </div>
+      <div class="card" style="margin-bottom:24px;">
+        <table>
+          <thead><tr><th>Faculty ID</th><th>Name</th><th>Department</th><th>Units</th><th>Sections</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono" style="color:var(--muted);">FAC-001</td><td style="font-weight:600;">Bernardo, Jose Antonio</td><td>College of IT</td><td class="mono">18</td><td class="mono">3</td><td><span class="badge">Full-time</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">FAC-002</td><td style="font-weight:600;">Lumabas, Carla Mae</td><td>College of IT</td><td class="mono">12</td><td class="mono">2</td><td><span class="badge">Part-time</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">FAC-003</td><td style="font-weight:600;">Sison, Rosario D.</td><td>College of Nursing</td><td class="mono">21</td><td class="mono">3</td><td><span class="badge">Full-time</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">FAC-004</td><td style="font-weight:600;">Reyes, Eduardo P.</td><td>College of Business</td><td class="mono">18</td><td class="mono">3</td><td><span class="badge">Full-time</span></td></tr>
+            <tr><td class="mono" style="color:var(--muted);">FAC-005</td><td style="font-weight:600;">Camacho, Lilia T.</td><td>College of Education</td><td class="mono">9</td><td class="mono">1</td><td><span class="badge">Part-time</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Reports</h2>
+      <p style="margin-bottom:12px;">Generate and export academic and administrative reports</p>
+      <div class="grid-3">
+        <div class="card" style="padding:12px;"><div class="label" style="margin-bottom:4px;">Enrollment</div><h3>Enrollment Summary</h3><p style="margin:4px 0 8px;">Total enrolled students by college and year level</p><div style="display:flex;gap:6px;"><span class="btn" style="font-size:10px;padding:3px 8px;">Preview</span><span class="btn" style="font-size:10px;padding:3px 8px;">Export PDF</span></div></div>
+        <div class="card" style="padding:12px;"><div class="label" style="margin-bottom:4px;">Grades</div><h3>Grade Distribution</h3><p style="margin:4px 0 8px;">Grade frequency analysis per course and section</p><div style="display:flex;gap:6px;"><span class="btn" style="font-size:10px;padding:3px 8px;">Preview</span><span class="btn" style="font-size:10px;padding:3px 8px;">Export PDF</span></div></div>
+        <div class="card" style="padding:12px;"><div class="label" style="margin-bottom:4px;">COR</div><h3>Certificate of Registration</h3><p style="margin:4px 0 8px;">Generate individual COR for enrolled students</p><div style="display:flex;gap:6px;"><span class="btn" style="font-size:10px;padding:3px 8px;">Preview</span><span class="btn" style="font-size:10px;padding:3px 8px;">Export PDF</span></div></div>
+        <div class="card" style="padding:12px;"><div class="label" style="margin-bottom:4px;">Students</div><h3>Masterlist</h3><p style="margin:4px 0 8px;">Complete student roster per course section</p><div style="display:flex;gap:6px;"><span class="btn" style="font-size:10px;padding:3px 8px;">Preview</span><span class="btn" style="font-size:10px;padding:3px 8px;">Export PDF</span></div></div>
+        <div class="card" style="padding:12px;"><div class="label" style="margin-bottom:4px;">Grades</div><h3>Deficiency Report</h3><p style="margin:4px 0 8px;">Students with incomplete or failing grades</p><div style="display:flex;gap:6px;"><span class="btn" style="font-size:10px;padding:3px 8px;">Preview</span><span class="btn" style="font-size:10px;padding:3px 8px;">Export PDF</span></div></div>
+        <div class="card" style="padding:12px;"><div class="label" style="margin-bottom:4px;">Status</div><h3>LOA / Dropout Report</h3><p style="margin:4px 0 8px;">Leave of absence and dropout summary</p><div style="display:flex;gap:6px;"><span class="btn" style="font-size:10px;padding:3px 8px;">Preview</span><span class="btn" style="font-size:10px;padding:3px 8px;">Export PDF</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 7 — STUDENT: HOME
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 7 of 9 — Student Portal: Home</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">STUDENT</span><span style="font-size:11px; color:var(--muted);">Maria Lucia C. Reyes · 2024-001</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Student</div><ul class="sidebar-nav"><li class="active">⊞ Home</li><li>≡ My Grades</li><li>⊟ Schedule</li><li>⊕ Enrollment</li><li>✓ Clearance</li><li>◈ My Profile</li></ul><div style="padding:10px 14px; border-top:1px solid var(--border); margin-top:auto;"><div style="display:flex;align-items:center;gap:8px;"><div class="placeholder-img" style="width:28px;height:28px;border-radius:50%;font-size:9px;flex-shrink:0;">[AV]</div><div><div style="font-size:12px;font-weight:600;">Maria Lucia</div><div class="mono" style="font-size:10px;color:var(--muted);">2024-001</div></div></div></div></div>
+    <div class="panel-content">
+      <h1>Welcome back, Maria Lucia.</h1>
+      <p style="margin-bottom:14px;">AY 2024–2025 — 1st Semester · 3rd Year</p>
+
+      <div class="card" style="padding:14px; margin-bottom:16px; display:flex; gap:14px; align-items:center;">
+        <div class="placeholder-img" style="width:52px;height:52px;border-radius:50%;flex-shrink:0;font-size:9px;">[PHOTO]</div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:14px;">Reyes, Maria Lucia C.</div>
+          <div style="font-size:11px; color:var(--muted);">Bachelor of Science in Computer Science</div>
+          <div style="font-size:11px; color:var(--light);">College of Engineering</div>
+        </div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div style="text-align:center;"><div class="label">Student ID</div><div style="font-weight:600; font-size:12px;">2024-001</div></div>
+          <div style="text-align:center;"><div class="label">Year Level</div><div style="font-weight:600; font-size:12px;">3rd Year</div></div>
+          <div style="text-align:center;"><div class="label">GWA</div><div style="font-weight:600; font-size:12px;">1.38</div></div>
+          <div style="text-align:center;"><div class="label">Status</div><div style="font-weight:600; font-size:12px;">Regular</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-header"><h3>Enrolled Subjects</h3></div>
+          <table>
+            <tbody>
+              <tr><td class="mono" style="width:70px;font-size:11px;font-weight:600;">BSCS 301</td><td><div style="font-weight:600;font-size:12px;">Data Structures &amp; Algorithms</div><div style="font-size:10px;color:var(--muted);">MWF 07:00–08:30 · RM 204 · Prof. Bernardo</div></td><td class="mono" style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;">3 units</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 302</td><td><div style="font-weight:600;font-size:12px;">Operating Systems</div><div style="font-size:10px;color:var(--muted);">TTh 09:00–10:30 · RM 205 · Prof. dela Torre</div></td><td class="mono" style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;">3 units</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 303</td><td><div style="font-weight:600;font-size:12px;">Software Engineering</div><div style="font-size:10px;color:var(--muted);">MWF 10:00–11:00 · RM 203 · Prof. Aquino</div></td><td class="mono" style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;">3 units</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 304</td><td><div style="font-weight:600;font-size:12px;">Database Management</div><div style="font-size:10px;color:var(--muted);">TTh 13:00–14:30 · LAB 2 · Prof. Navarro</div></td><td class="mono" style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;">3 units</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">GE 001</td><td><div style="font-weight:600;font-size:12px;">Ethics and Social Responsibility</div><div style="font-size:10px;color:var(--muted);">F 13:00–16:00 · RM 101 · Prof. Santos</div></td><td class="mono" style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;">3 units</td></tr>
+            </tbody>
+          </table>
+          <div style="padding:8px 12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
+            <span>Total units enrolled</span><span class="mono" style="font-weight:600;">15 units</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="card card-body">
+            <h3 style="margin-bottom:8px;">Announcements</h3>
+            <div style="margin-bottom:8px;"><span class="tag">Registrar</span><p style="margin-top:4px;">COR pickup: Aug 12 at Registrar's Office</p></div>
+            <div style="margin-bottom:8px;"><span class="tag">Finance</span><p style="margin-top:4px;">Balance due: ₱4,200 before Sep 1</p></div>
+            <div><span class="tag">Dean</span><p style="margin-top:4px;">No classes Aug 21 — University Founding Anniversary</p></div>
+          </div>
+          <div class="card card-body">
+            <h3 style="margin-bottom:8px;">Quick Links</h3>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <span class="btn">View Grades →</span>
+              <span class="btn">My Schedule →</span>
+              <span class="btn">Clearance Status →</span>
+              <span class="btn">My Profile →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 8 — STUDENT: GRADES + SCHEDULE
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 8 of 9 — Student Portal: Grades &amp; Schedule</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">STUDENT</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Student</div><ul class="sidebar-nav"><li>⊞ Home</li><li class="active">≡ My Grades</li><li>⊟ Schedule</li><li>⊕ Enrollment</li><li>✓ Clearance</li><li>◈ My Profile</li></ul></div>
+    <div class="panel-content">
+      <h1>My Grades</h1>
+      <p style="margin-bottom:14px;">AY 2024–2025 — 1st Semester</p>
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="stat-card"><div class="stat-label">Units Enrolled</div><div class="stat-value" style="font-size:22px;">15</div></div>
+        <div class="stat-card"><div class="stat-label">Current GWA</div><div class="stat-value" style="font-size:22px;">1.38</div></div>
+        <div class="stat-card"><div class="stat-label">Academic Standing</div><div class="stat-value" style="font-size:22px;">Good</div></div>
+      </div>
+      <div class="card" style="margin-bottom:22px;">
+        <div class="card-header"><h3>1st Semester Grades</h3></div>
+        <table>
+          <thead><tr><th>Code</th><th>Subject Title</th><th>Units</th><th>Prelim</th><th>Midterm</th><th>Semi-Final</th><th>Final</th><th>Remarks</th></tr></thead>
+          <tbody>
+            <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 301</td><td style="font-weight:600;">Data Structures</td><td class="mono">3</td><td class="mono">1.25</td><td class="mono">1.50</td><td class="mono">1.25</td><td class="mono">1.25</td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 302</td><td style="font-weight:600;">Operating Systems</td><td class="mono">3</td><td class="mono">1.00</td><td class="mono">1.25</td><td class="mono">1.00</td><td class="mono">1.25</td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 303</td><td style="font-weight:600;">Software Engineering</td><td class="mono">3</td><td class="mono">1.50</td><td class="mono">1.75</td><td class="mono">1.50</td><td class="mono">1.75</td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 304</td><td style="font-weight:600;">Database Management</td><td class="mono">3</td><td class="mono">1.25</td><td class="mono">1.25</td><td class="mono">1.25</td><td class="mono">1.25</td><td><span class="badge">Passed</span></td></tr>
+            <tr><td class="mono" style="font-size:11px;font-weight:600;">GE 001</td><td style="font-weight:600;">Ethics</td><td class="mono">3</td><td class="mono">1.50</td><td class="mono">1.50</td><td class="mono">—</td><td class="mono">—</td><td><span class="badge">In Progress</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>My Schedule — AY 2024–2025, 1st Semester</h2>
+      <div class="card">
+        <table>
+          <thead><tr><th style="width:80px;">Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono" style="font-size:11px;color:var(--muted);">07:00–08:30</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 301&#10;Data Structures&#10;RM 204</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 301&#10;Data Structures&#10;RM 204</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 301&#10;Data Structures&#10;RM 204</span></td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:11px;color:var(--muted);">09:00–10:30</td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 302&#10;Operating Systems&#10;RM 205</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 302&#10;Operating Systems&#10;RM 205</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:11px;color:var(--muted);">10:00–11:00</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 303&#10;Software Eng.&#10;RM 203</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 303&#10;Software Eng.&#10;RM 203</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 303&#10;Software Eng.&#10;RM 203</span></td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:11px;color:var(--muted);">13:00–14:30</td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 304&#10;Database Mgmt&#10;LAB 2</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">BSCS 304&#10;Database Mgmt&#10;LAB 2</span></td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:11px;color:var(--muted);">13:00–16:00</td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;color:var(--light);font-size:11px;">—</td>
+              <td style="text-align:center;"><span class="schedule-cell">GE 001&#10;Ethics&#10;RM 101</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+  PAGE 9 — STUDENT: ENROLLMENT + CLEARANCE + PROFILE
+═══════════════════════════════════════════════════════════ -->
+<div class="page-section">
+  <div class="section-banner">Page 9 of 9 — Student Portal: Enrollment, Clearance &amp; Profile</div>
+  <div class="topbar" style="margin-bottom:0;"><div class="topbar-logo"><div class="logo-box">A</div><span>AMORE</span><span class="sep">|</span><span class="sub">CWSIS</span></div><div class="topbar-right"><span class="tag">STUDENT</span></div></div>
+  <div class="panel-layout">
+    <div class="sidebar"><div class="sidebar-label">Student</div><ul class="sidebar-nav"><li>⊞ Home</li><li>≡ My Grades</li><li>⊟ Schedule</li><li class="active">⊕ Enrollment</li><li>✓ Clearance</li><li>◈ My Profile</li></ul></div>
+    <div class="panel-content">
+
+      <!-- Enrollment -->
+      <h1 style="margin-bottom:4px;">Enrollment</h1>
+      <p style="margin-bottom:12px;">AY 2024–2025 — 1st Semester Enrollment Status</p>
+      <div style="border:1px solid var(--border); border-left:4px solid var(--accent); background:var(--bg-alt); padding:10px 14px; margin-bottom:14px; font-size:12px;">
+        <strong>⚠ Late Enrollment Period Active</strong><br>
+        Late enrollment is open until August 20, 2024. A late enrollment fee of ₱500 applies.
+      </div>
+      <div class="grid-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="card-header"><h3>Currently Enrolled</h3></div>
+          <table>
+            <tbody>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;width:70px;">BSCS 301</td><td><div style="font-weight:600;font-size:12px;">Data Structures</div><div style="font-size:10px;color:var(--muted);">Section CS3A</div></td><td class="mono" style="font-size:11px;color:var(--muted);">3 u</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 302</td><td><div style="font-weight:600;font-size:12px;">Operating Systems</div><div style="font-size:10px;color:var(--muted);">Section CS3B</div></td><td class="mono" style="font-size:11px;color:var(--muted);">3 u</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 303</td><td><div style="font-weight:600;font-size:12px;">Software Engineering</div><div style="font-size:10px;color:var(--muted);">Section CS3A</div></td><td class="mono" style="font-size:11px;color:var(--muted);">3 u</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">BSCS 304</td><td><div style="font-weight:600;font-size:12px;">Database Management</div><div style="font-size:10px;color:var(--muted);">Section CS3B</div></td><td class="mono" style="font-size:11px;color:var(--muted);">3 u</td></tr>
+              <tr><td class="mono" style="font-size:11px;font-weight:600;">GE 001</td><td><div style="font-weight:600;font-size:12px;">Ethics</div><div style="font-size:10px;color:var(--muted);">Section GE1A</div></td><td class="mono" style="font-size:11px;color:var(--muted);">3 u</td></tr>
+            </tbody>
+          </table>
+          <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--muted);">Total</span><span class="mono" style="font-weight:600;">15 units</span></div>
+        </div>
+        <div class="card card-body">
+          <h3 style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border);">Enrollment Details</h3>
+          <table>
+            <tbody>
+              <tr><td style="border:none;padding:4px 0;color:var(--muted);font-size:11px;">Enrollment Date</td><td style="border:none;padding:4px 0;text-align:right;font-family:'Courier New',monospace;font-size:11px;font-weight:600;">Aug 8, 2024</td></tr>
+              <tr><td style="border:none;padding:4px 0;color:var(--muted);font-size:11px;">Assessment</td><td style="border:none;padding:4px 0;text-align:right;font-family:'Courier New',monospace;font-size:11px;font-weight:600;">₱28,400.00</td></tr>
+              <tr><td style="border:none;padding:4px 0;color:var(--muted);font-size:11px;">Scholarship Discount</td><td style="border:none;padding:4px 0;text-align:right;font-family:'Courier New',monospace;font-size:11px;font-weight:600;">₱0.00</td></tr>
+              <tr><td style="border:none;padding:4px 0;color:var(--muted);font-size:11px;">Balance</td><td style="border:none;padding:4px 0;text-align:right;font-family:'Courier New',monospace;font-size:11px;font-weight:600;">₱4,200.00</td></tr>
+              <tr><td style="border:none;padding:4px 0;color:var(--muted);font-size:11px;">Payment Due</td><td style="border:none;padding:4px 0;text-align:right;font-family:'Courier New',monospace;font-size:11px;font-weight:600;">Sep 1, 2024</td></tr>
+            </tbody>
+          </table>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <span class="btn btn-primary" style="flex:1;text-align:center;">Print COR</span>
+            <span class="btn" style="flex:1;text-align:center;">Pay Online</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clearance -->
+      <h2>Clearance Status</h2>
+      <p style="margin-bottom:12px;">AY 2024–2025 — 1st Semester</p>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-header"><h3>Clearance Checklist</h3><span class="mono" style="font-size:11px;color:var(--muted);">5 / 8 cleared</span></div>
+        <div class="checklist-item"><div class="check-circle done">✓</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Registrar's Office</div></div><div><span class="badge">Cleared</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">Dec 14, 2024</div></div></div>
+        <div class="checklist-item"><div class="check-circle done">✓</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Finance / Cashier</div></div><div><span class="badge">Cleared</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">Dec 14, 2024</div></div></div>
+        <div class="checklist-item"><div class="check-circle done">✓</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Library</div></div><div><span class="badge">Cleared</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">Dec 13, 2024</div></div></div>
+        <div class="checklist-item"><div class="check-circle done">✓</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Guidance Office</div></div><div><span class="badge">Cleared</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">Dec 13, 2024</div></div></div>
+        <div class="checklist-item"><div class="check-circle done">✓</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Student Affairs</div></div><div><span class="badge">Cleared</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">Dec 12, 2024</div></div></div>
+        <div class="checklist-item"><div class="check-circle">○</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Department (Engineering)</div><div style="font-size:10px;color:var(--muted);">Submit final project defense documents</div></div><div><span class="badge">Pending</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div></div></div>
+        <div class="checklist-item"><div class="check-circle">○</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Laboratory Unit</div><div style="font-size:10px;color:var(--muted);">Return borrowed equipment — Item #LAB-047</div></div><div><span class="badge">Pending</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div></div></div>
+        <div class="checklist-item"><div class="check-circle">○</div><div style="flex:1;"><div style="font-weight:600;font-size:12px;">Dean's Office</div><div style="font-size:10px;color:var(--muted);">Awaiting department clearance</div></div><div><span class="badge">Pending</span><div class="mono" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div></div></div>
+      </div>
+      <div class="card card-body" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div><h3>Overall Clearance</h3><p>Complete all offices to receive your final clearance certificate.</p></div>
+          <div style="text-align:right;"><div style="font-size:20px;font-weight:700;">62.5%</div><div style="font-size:11px;color:var(--muted);">5 of 8 cleared</div></div>
+        </div>
+        <div class="bar-track" style="height:10px;"><div class="bar-fill" style="width:62.5%;height:10px;"></div></div>
+      </div>
+
+      <!-- Profile snippet -->
+      <h2>My Profile</h2>
+      <div class="grid-2">
+        <div class="card card-body">
+          <h3 style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);">Personal Information</h3>
+          <div class="grid-2" style="gap:10px;">
+            <div><div class="label">Full Name</div><div style="font-size:12px;">Reyes, Maria Lucia Cabrera</div></div>
+            <div><div class="label">Date of Birth</div><div style="font-size:12px;">March 15, 2004</div></div>
+            <div><div class="label">Sex</div><div style="font-size:12px;">Female</div></div>
+            <div><div class="label">Civil Status</div><div style="font-size:12px;">Single</div></div>
+            <div><div class="label">Contact No.</div><div style="font-size:12px;">09171234567</div></div>
+            <div><div class="label">Nationality</div><div style="font-size:12px;">Filipino</div></div>
+          </div>
+          <div style="margin-top:10px;"><div class="label">Email Address</div><div style="font-size:12px;">mlc.reyes@student.amore.edu.ph</div></div>
+          <div style="margin-top:8px;"><div class="label">Address</div><div style="font-size:12px;">123 Sampaguita St., Quezon City</div></div>
+        </div>
+        <div class="card card-body">
+          <h3 style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);">Academic Information</h3>
+          <div class="grid-2" style="gap:10px;">
+            <div><div class="label">College</div><div style="font-size:12px;">College of Engineering</div></div>
+            <div><div class="label">Program</div><div style="font-size:12px;">BS Computer Science</div></div>
+            <div><div class="label">Year Level</div><div style="font-size:12px;">3rd Year</div></div>
+            <div><div class="label">Student Type</div><div style="font-size:12px;">Regular</div></div>
+            <div><div class="label">Date Admitted</div><div style="font-size:12px;">August 2022</div></div>
+            <div><div class="label">Expected Graduation</div><div style="font-size:12px;">May 2026</div></div>
+            <div><div class="label">GWA</div><div style="font-size:12px;font-weight:700;">1.38</div></div>
+            <div><div class="label">Units Earned</div><div style="font-size:12px;">72</div></div>
+          </div>
+          <div style="margin-top:14px; text-align:right;">
+            <span class="btn">Request Profile Update</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+  SHARED FOOTER (all pages)
+═══════════════════════════════════════════════════════════ -->
+<footer style="border-top:1px solid var(--border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; margin-top:24px;">
+  <div>
+    <div style="font-weight:700; font-size:12px;">Amore University</div>
+    <div style="font-size:11px; color:var(--muted);">Centralized Web Student Information System</div>
+  </div>
+  <div class="mono" style="font-size:11px; color:var(--muted);">v1.0.0 · © 2024 Amore University · All rights reserved</div>
+</footer>
+
+</body>
+</html>
