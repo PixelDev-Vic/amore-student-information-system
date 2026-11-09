@@ -95,5 +95,3 @@ This is the full high-fidelity rebuild plan for Amore Centralized SIS - keeping 
 - *Student:* Grades per subject (Filipino, Math, Science, English, AP, MAPEH, TLE, Values Ed), attendance, announcements, profile with LRN
 
 *Data:* Single `mockData.js` with 40 Filipino students Grades 7-12, 12 teachers, 6 sections SY 2026-2027. All state via `useState` + Context, no backend.
-
-Want me to start scaffolding the components in `src/` now?
