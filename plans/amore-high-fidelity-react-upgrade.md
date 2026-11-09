@@ -1,3 +1,5 @@
+@Meta AI 
+
 # Amore Centralized Web Student Information System — High-Fidelity React Upgrade Plan
 
 ## Objective
@@ -60,159 +62,38 @@ Rebuild the React application as a polished, responsive green-and-white Student 
 - View action opens a concise learner detail modal/drawer.
 
 ### Manage Teachers
-- Search/filterable teacher table with employee ID, advisory class, subject assignments, contact, and status.
-- Add, Edit, View, and Remove flows using the same reusable modal/confirmation patterns.
+- Search/filterable teacher table with employee ID, advisor.
 
-### Classes & Subjects
-- Grade/section cards or table showing adviser, room, learner count, schedule summary, and assigned subjects.
-- Class detail view with subject-to-teacher assignments.
-- Add/Edit class or subject assignment modal; changes update the current session state.
 
-### Announcement Approval
-- Queue of teacher-submitted announcements with author, audience, submission date, priority, and message preview.
-- Approve and Reject actions update queue status and dashboard pending count; rejection asks for a short reason.
-- Approved items appear in the published list and relevant role announcement feeds.
 
-### Attendance Overview
-- Daily attendance KPIs, date and grade filters, attendance-by-grade visualization, and an absentees/late table.
-- Status legend for Present, Late, Absent, and Excused.
 
-### Reports
-- Report cards for enrollment, attendance, grade distribution, class masterlists, and faculty load.
-- Filters for report type, grade level, and period.
-- “Export CSV” generates a real browser download from mock/current state.
-- “Print / Save as PDF” opens a clean printable report view through the browser print dialog, making PDF export functional without a PDF library.
+This is the full high-fidelity rebuild plan for Amore Centralized SIS - keeping it front-end only, green/white K-12, SY 2026-2027.
 
-### Settings
-- Editable school profile and current academic year/term settings.
-- Local save action with confirmation toast; no server persistence claim.
+*Design System to lock first:*
+- Palette: deep `#166534` for primary/nav/hero overlay, bright `#22C55E` for accents/charts/CTAs, tint `#F0FDF4` for backgrounds, white cards, text `#14532D / #1F2937`
+- Fonts: Inter from Google Fonts, 8px rhythm, radii 12-16px, border `1px solid #DCFCE7`, soft shadow `0 4px 20px rgba(22,101,52,0.06)`
+- Build tokens in Tailwind v4 `@theme` - don't hardcode hex everywhere
 
-## Teacher Workspace
+*Usability issues from mid-fi to fix in hi-fi:*
+- Separate Student/Admin buttons -> single form with role detection
+- Red college wireframe -> green K-12 language (LRN, Grades 7-12, Filipino, Araling Panlipunan, MAPEH, TLE)
+- Teacher redirecting to Admin -> dedicated Teacher dashboard
+- No mobile nav, no error/loading/empty states -> add drawer, inline validation, toasts, skeletons
+- Tables not responsive -> card list on mobile, table wrapper on desktop
+*Information Architecture & Build Order:*
 
-### Overview
-- Welcome header, today’s class count, total assigned learners, attendance completion, and pending grade tasks.
-- Today’s schedule, recent class activity, and school/approved announcements.
+*1. Public Landing:* Sticky header with Amore mark + Open Portal. Hero: PH classroom photo with `linear-gradient(to bottom right, #166534 80%, transparent)` overlay + SY 2026-2027 badge. Metrics (students/teachers/sections/attendance), 3 role feature cards, announcement highlights, school dates, footer. Responsive: 2-col hero desktop, stacked mobile.
 
-### My Classes
-- Assigned Grade 7–12 section cards with subject, schedule, room, and learner count.
-- Class roster detail with learner status and quick links into attendance or gradebook.
+*2. Single Login:* Split card. Left: brand panel with photo. Right: one form - email, password with eye toggle, remember-me, forgot link. Role detection: `principal|admin` -> Admin, `teacher|faculty` -> Teacher, `student|[0-9]` -> Student, else inline error. 3 demo chips that autofill `principal@amore.edu.ph` / `teacher@amore.edu.ph` / `student@amore.edu.ph`. Any non-empty password accepted. Sign-out clears state -> landing.
 
-### Attendance
-- Select class and date, then mark learners Present/Late/Absent/Excused.
-- “Mark all present” shortcut and Save action; changes persist in in-memory state and update completion indicators.
+*3. Shared Shell:* Config-driven `rolesConfig = { admin: { nav, label }, teacher, student }`. Components: Sidebar collapsible desktop / overlay drawer mobile, Topbar with search, notifications, avatar menu. Shared primitives: Button, Badge, MetricCard, Panel, Progress, Modal, ConfirmDialog, Field, Select, TableWrapper, EmptyState, Toast, Chart primitives (div + SVG only).
 
-### Gradebook
-- Select a class/subject and edit quarterly grades for Filipino, Mathematics, Science, English, MAPEH, TLE, and related subjects.
-- Validate grades to the 60–100 range, derive remarks (Passed/Needs Improvement), and save with feedback.
+*4. Workspaces:*
+- *Admin:* Metrics, enrollment trend line (SVG), attendance by grade bar (div%), grade 7-12 distribution, activity stream, at-risk list
+- *Manage Students/Teachers:* Search + filters (grade/section/status), table with LRN/full name/grade-section/guardian/status. Add/Edit modal with validation, View drawer, Delete with confirm. All mutations update in-memory React state only.
+- *Teacher:* My sections, today's attendance quick-take, grading queue, student list for advisory
+- *Student:* Grades per subject (Filipino, Math, Science, English, AP, MAPEH, TLE, Values Ed), attendance, announcements, profile with LRN
 
-### Announcements
-- List submitted announcements and statuses (Pending, Approved, Rejected).
-- Compose modal for title, audience, priority, and message; submission adds to the Principal approval queue.
+*Data:* Single `mockData.js` with 40 Filipino students Grades 7-12, 12 teachers, 6 sections SY 2026-2027. All state via `useState` + Context, no backend.
 
-### Schedule and Profile
-- Weekly teaching schedule in a responsive card/table representation.
-- Teacher profile, advisory assignment, subjects, and contact details.
-
-## Student Workspace
-
-### Overview
-- Personalized learner profile for a realistic Filipino Grade 10 student, current section/adviser, overall average, attendance rate, and active school year.
-- Today’s classes, upcoming activities, recent grades, and approved announcements.
-
-### My Grades
-- Quarterly grade table for K–12 subjects with overall average, remarks, and simple progress visualization.
-- Quarter selector with realistic values and clear pending states where applicable.
-
-### Schedule
-- Mobile-friendly weekly class schedule showing subject, teacher, time, and room.
-
-### Attendance
-- Attendance summary by month and subject, plus recent attendance records using the shared status system.
-
-### Enrollment / School Record
-- Enrollment status, LRN, grade/section, guardian and emergency details, and downloadable/printable enrollment summary.
-
-### Profile
-- Readable personal, guardian, and academic information panels.
-- “Request profile update” opens a working modal and submits a local request with success feedback.
-
-## Data and State Design
-- Move all demo records into a typed `src/data/mockData.ts` module, including users, students, teachers, classes, subjects, attendance, grades, announcements, events, and report rows.
-- Define shared domain types in `src/types.ts` for roles, tabs, users, records, announcement statuses, and attendance statuses.
-- Keep application-level state in `App.tsx` (active public/authenticated view, logged-in role, mutable student/teacher/announcement datasets, toast state). Pass focused state/actions into role panels; avoid adding a state-management library.
-- Keep role-local UI state (selected tab, filters, open modal, draft form) inside each dashboard component.
-- Ensure derived metrics and charts are calculated from current state where practical so CRUD and approval actions visibly affect the UI.
-
-## Proposed File Structure
-- `src/App.tsx` — app-level routing/session and shared mutable mock state.
-- `src/index.css` — Tailwind import, Inter wiring, theme variables, base styles, scrollbar, print rules, and small reusable animation utilities.
-- `src/types.ts` — shared domain and navigation types.
-- `src/data/mockData.ts` — all realistic SY 2026–2027 demo content.
-- `src/components/ui.tsx` — compact shared primitives (buttons, cards, badges, modal, fields, tables, toast, charts).
-- `src/components/AppShell.tsx` — responsive authenticated shell and navigation.
-- `src/components/LandingPage.tsx` — public marketing/overview page.
-- `src/components/LoginPage.tsx` — split-screen login and role detection.
-- `src/components/AdminDashboard.tsx` — all Principal/Admin modules.
-- `src/components/TeacherDashboard.tsx` — all Teacher modules.
-- `src/components/StudentDashboard.tsx` — all Student modules.
-
-This split is intentionally role-oriented: it removes the current 1,300-line monolith without introducing a deep component hierarchy or unnecessary framework abstractions.
-
-## Visual and Asset Implementation
-- Before implementation, invoke the repository design-system procedure and use its guidance to establish the shared visual primitives.
-- Invoke the Unsplash procedure to select one context-appropriate Filipino school/classroom image for the landing hero and login panel; use an approved remote image URL with a dark green overlay and meaningful alt text. If no suitable image is available, use a local CSS/illustrative fallback rather than an unrelated photo.
-- Add `lucide-react` for consistent interface icons; remove Unicode-symbol navigation and action icons.
-- Use Inter through a Google Fonts CSS2 import in `src/index.css` (no private-font workflow required).
-- Keep motion restrained: subtle hover elevation, sidebar/drawer transitions, modal fade/scale, and toast entrance; honor reduced-motion preferences.
-- Meet basic accessibility expectations: semantic headings/landmarks, keyboard-operable controls, visible focus rings, labelled forms, modal close controls, adequate contrast, and icon text/ARIA labels.
-
-## Interaction and Edge-Case Requirements
-- Tables become horizontally scrollable or switch to stacked cards on narrow screens; primary actions remain reachable.
-- Empty searches and filters show a useful empty state with a clear reset action.
-- Modals close through explicit cancel/close actions and Escape; destructive actions always require confirmation.
-- Forms prevent blank required fields and display field-level errors.
-- Login prevents invalid routing for unknown emails.
-- Grade inputs reject nonnumeric/out-of-range values.
-- Announcement rejection requires a reason; approval/rejection cannot be applied twice.
-- Export handles current filters and uses sanitized filenames containing the report type and SY.
-- Buttons that represent prototype-only external services (forgot password, online service links) open a clear informational toast instead of appearing broken.
-
-## Implementation Sequence
-1. Invoke the design-system and Unsplash procedures, choose the photo, and establish tokens/global styles.
-2. Add shared types and realistic mock data, then create the reusable UI primitives and icon treatment.
-3. Rebuild app-level navigation, single login role detection, sign-in/sign-out state, and the responsive shared shell.
-4. Implement the public landing page and split-screen login.
-5. Implement Principal/Admin modules, including linked mutable CRUD data, approval queue, attendance, and report exports.
-6. Implement Teacher modules and connect announcement submissions to the same approval queue.
-7. Implement Student modules and approved-announcement consumption.
-8. Add responsive, accessibility, empty/error, toast, print, and reduced-motion behavior.
-9. Format and verify the completed React app without touching the static print prototype.
-
-## Verification Strategy
-- Run the repository formatter entry point (`./.figma/make/format`) after broad edits.
-- Run `pnpm build` because this is a broad multi-file TypeScript/UI rewrite; resolve all TypeScript and Vite build failures.
-- Do not start another development server; rely on the existing Figma Make server and hot reload.
-- Manually exercise in the preview at desktop and mobile widths:
-  - landing navigation and CTA;
-  - invalid login plus all three demo role routes;
-  - sidebar collapse and mobile drawer;
-  - Admin student/teacher add, edit, view, and remove;
-  - class/subject editing;
-  - teacher announcement submission followed by admin approval/rejection;
-  - teacher attendance and grade validation/save;
-  - student grades, schedule, attendance, enrollment, and profile request;
-  - CSV download and browser print report;
-  - modal keyboard/close behavior, empty searches, and sign-out.
-- Confirm `git diff -- medium-fidelity/index.html` is empty and only intended React/dependency files changed.
-
-## Acceptance Criteria
-- The React app presents a consistent high-fidelity green-and-white visual system with responsive desktop/mobile layouts.
-- Landing, login, Principal/Admin, Teacher, and Student experiences are complete and navigable.
-- Login is one email-driven form and routes valid demo emails to the correct role.
-- Principal/Admin includes school stats/charts, student and teacher management, classes/subjects, announcement approvals, attendance, reports/export, and user CRUD modals.
-- Teacher includes classes, attendance, gradebook, announcement submission, schedule, and profile.
-- Student includes overview, K–12 grades, schedule, attendance, enrollment record, and profile.
-- Mock content consistently uses Filipino identities, Grades 7–12, K–12 subjects, and SY 2026–2027.
-- Repeated visual and behavioral patterns use shared components, and iconography is consistent.
-- Core demo actions provide visible state changes or feedback; no primary action appears inert.
-- The app builds successfully, and `medium-fidelity/index.html` remains unchanged.
+Want me to start scaffolding the components in `src/` now?
