@@ -1,4 +1,4 @@
-@Meta AI 
+
 
 # Amore Centralized Web Student Information System — High-Fidelity React Upgrade Plan
 
